@@ -11,7 +11,7 @@ function json(data, status = 200) {
 function limparNome(n) {
   let s = String(n || "").replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 30);
   if (/:\/\/|www\.|\.com|\.br|@/i.test(s)) s = "";
-  return s || "Anônimo";
+  return s;
 }
 
 export async function onRequestPost({ request, env }) {
@@ -21,6 +21,7 @@ export async function onRequestPost({ request, env }) {
   const valor = Number(body.value);
   if (!VALORES.includes(valor)) return json({ error: "Valor inválido" }, 400);
   const nome = limparNome(body.name);
+  if (!nome) return json({ error: "Nome inválido" }, 400);
 
   const r = await fetch("https://api.obypay.app/transactions", {
     method: "POST",
