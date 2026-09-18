@@ -168,6 +168,8 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:1
 .nomebox label{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
 .nomebox input{width:100%;font:inherit;font-size:15px;padding:10px 12px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
 .nomebox input:focus{outline:none;border-color:#32BCAD}
+.nomebox input.erro{border-color:#E8742A}
+.nomeerr{color:#E8742A;font-size:13px;font-weight:600;min-height:1.3em;margin-top:4px}
 .apoiadores{margin-top:18px;border-top:1px solid var(--grid);padding-top:14px}
 .apoiadores h3{font-size:14px;margin:0 0 8px}
 .alist{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
@@ -282,7 +284,8 @@ footer{border-top:1px solid var(--line);color:var(--faint);font-size:12px;paddin
           <p class="sub">Contribuição voluntária por Pix. Escreva seu nome e escolha um valor para gerar o QR Code.</p>
           <div class="nomebox">
             <label for="doadorNome">Nome que vai aparecer na tela</label>
-            <input id="doadorNome" maxlength="30" autocomplete="nickname" placeholder="Deixe em branco para aparecer como Anônimo">
+            <input id="doadorNome" maxlength="30" autocomplete="nickname" placeholder="Escreva seu nome para gerar o Pix">
+            <div class="nomeerr" id="nomeErr" role="alert"></div>
           </div>
           <div class="vals">
             <button class="val-btn" data-v="1">R$ 1</button>
@@ -293,7 +296,7 @@ footer{border-top:1px solid var(--line);color:var(--faint);font-size:12px;paddin
             <button class="val-btn" data-v="100">R$ 100</button>
             <button class="val-btn" data-v="200">R$ 200</button>
           </div>
-          <p class="aviso">A contribuição não muda nenhum voto e não dá vantagem no placar. Depois que o pagamento é confirmado, o nome que você escreveu aparece para todos na lista de apoiadores, sem o valor. Confira o nome de quem recebe no app do banco antes de pagar.</p>
+          <p class="aviso">A contribuição não muda nenhum voto e não dá vantagem no placar. O nome é obrigatório. Depois que o pagamento é confirmado, ele aparece para todos na lista de apoiadores, sem o valor. Confira o nome de quem recebe no app do banco antes de pagar.</p>
         </div>
         <div class="pixbox" id="pixbox">
           <div class="qr" id="qr"></div>
@@ -669,15 +672,25 @@ var PIX_CITY = "SUZANO";    // sua cidade (até 15 letras)
           if (s && String(s.status).toUpperCase() === "PAID"){ stopPoll(); $("qr").textContent = ""; pixCode = ""; $("pixStatus").textContent = "Pagamento recebido. Obrigado pelo apoio!"; loadApoio(); }
         }).catch(function(){});
       }, 15000);
-    }catch(e){ $("qr").textContent = ""; $("pixStatus").textContent = "Não foi possível gerar o Pix agora. Tente de novo em instantes."; }
+    }catch(e){ $("qr").textContent = ""; $("pixStatus").textContent = (e && e.message === "Nome inválido") ? "Esse nome não pode ser usado. Escreva só o seu nome, sem links." : "Não foi possível gerar o Pix agora. Tente de novo em instantes."; }
   }
   document.querySelectorAll(".val-btn").forEach(function(b){
     b.addEventListener("click", function(){
       document.querySelectorAll(".val-btn").forEach(function(x){ x.classList.toggle("on", x === b); });
       var v = Number(b.getAttribute("data-v"));
-      if (useGateway) gatewayCharge(v); else if (PIX_KEY.trim()) staticCharge(v);
+      if (useGateway){
+        if (!$("doadorNome").value.trim()){
+          b.classList.remove("on");
+          $("doadorNome").classList.add("erro");
+          $("nomeErr").textContent = "Escreva seu nome antes de escolher o valor.";
+          $("doadorNome").focus();
+          return;
+        }
+        gatewayCharge(v);
+      } else if (PIX_KEY.trim()) staticCharge(v);
     });
   });
+  $("doadorNome").addEventListener("input", function(){ this.classList.remove("erro"); $("nomeErr").textContent = ""; });
   $("pixCopy").addEventListener("click", function(){
     if (!pixCode) return;
     var done = function(){ $("pixStatus").textContent = "Código copiado. Cole em Pix Copia e Cola no app do banco."; };
