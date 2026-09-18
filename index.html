@@ -164,6 +164,18 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:1
 .pixbox .amt{font-weight:700;margin:8px 0 6px}
 .copy{border:0;background:#32BCAD;color:#fff;font-weight:700;padding:10px 16px;border-radius:8px;cursor:pointer}
 .aviso{font-size:13px;color:var(--muted);margin:14px 0 0}
+.nomebox{margin:4px 0 12px;max-width:360px}
+.nomebox label{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+.nomebox input{width:100%;font:inherit;font-size:15px;padding:10px 12px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+.nomebox input:focus{outline:none;border-color:#32BCAD}
+.apoiadores{margin-top:18px;border-top:1px solid var(--grid);padding-top:14px}
+.apoiadores h3{font-size:14px;margin:0 0 8px}
+.alist{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.alist li{background:color-mix(in srgb,#32BCAD 14%,transparent);border:1px solid color-mix(in srgb,#32BCAD 40%,transparent);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600}
+.alist li small{font-weight:500;color:var(--muted);margin-left:6px}
+.alist li.novo{animation:pop .6s ease}
+@keyframes pop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+.alist .vazio{background:none;border:0;padding:0;font-weight:500;color:var(--faint)}
 @media (max-width:700px){.apoio{grid-template-columns:1fr}}
 footer{border-top:1px solid var(--line);color:var(--faint);font-size:12px;padding:18px 0 28px}
 
@@ -267,7 +279,11 @@ footer{border-top:1px solid var(--line);color:var(--faint);font-size:12px;paddin
       <div class="apoio">
         <div>
           <h2>Ajude a manter o site no ar</h2>
-          <p class="sub">Contribuição voluntária por Pix. Escolha um valor para gerar o QR Code.</p>
+          <p class="sub">Contribuição voluntária por Pix. Escreva seu nome e escolha um valor para gerar o QR Code.</p>
+          <div class="nomebox">
+            <label for="doadorNome">Nome que vai aparecer na tela</label>
+            <input id="doadorNome" maxlength="30" autocomplete="nickname" placeholder="Deixe em branco para aparecer como Anônimo">
+          </div>
           <div class="vals">
             <button class="val-btn" data-v="1">R$ 1</button>
             <button class="val-btn" data-v="5">R$ 5</button>
@@ -277,7 +293,7 @@ footer{border-top:1px solid var(--line);color:var(--faint);font-size:12px;paddin
             <button class="val-btn" data-v="100">R$ 100</button>
             <button class="val-btn" data-v="200">R$ 200</button>
           </div>
-          <p class="aviso">A contribuição não muda nenhum voto e não dá vantagem no placar. Ninguém fica sabendo quem contribuiu. Confira o nome de quem recebe no app do banco antes de pagar.</p>
+          <p class="aviso">A contribuição não muda nenhum voto e não dá vantagem no placar. Depois que o pagamento é confirmado, o nome que você escreveu aparece para todos na lista de apoiadores, sem o valor. Confira o nome de quem recebe no app do banco antes de pagar.</p>
         </div>
         <div class="pixbox" id="pixbox">
           <div class="qr" id="qr"></div>
@@ -285,6 +301,10 @@ footer{border-top:1px solid var(--line);color:var(--faint);font-size:12px;paddin
           <button class="copy" id="pixCopy">Copiar código Pix</button>
           <div class="status" id="pixStatus"></div>
         </div>
+      </div>
+      <div class="apoiadores">
+        <h3>Apoiadores</h3>
+        <ul class="alist" id="alist"><li class="vazio">Ninguém apoiou ainda. O seu nome pode ser o primeiro.</li></ul>
       </div>
     </section>
   </div>
@@ -635,7 +655,7 @@ var PIX_CITY = "SUZANO";    // sua cidade (até 15 letras)
     openBox(v); stopPoll();
     $("qr").textContent = "Gerando Pix…";
     try{
-      var r = await fetch("/api/pix", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: v }) });
+      var r = await fetch("/api/pix", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: v, name: $("doadorNome").value }) });
       var d = await r.json();
       if (!r.ok || !d.copyPaste) throw new Error(d.error || "erro");
       pixCode = d.copyPaste; $("qr").textContent = "";
@@ -646,7 +666,7 @@ var PIX_CITY = "SUZANO";    // sua cidade (até 15 letras)
       pollTimer = setInterval(function(){
         if (++tries > 40){ stopPoll(); $("pixStatus").textContent = ""; return; }
         fetch("/api/pix/" + encodeURIComponent(d.id)).then(function(x){ return x.json(); }).then(function(s){
-          if (s && String(s.status).toUpperCase() === "PAID"){ stopPoll(); $("qr").textContent = ""; pixCode = ""; $("pixStatus").textContent = "Pagamento recebido. Obrigado pelo apoio!"; }
+          if (s && String(s.status).toUpperCase() === "PAID"){ stopPoll(); $("qr").textContent = ""; pixCode = ""; $("pixStatus").textContent = "Pagamento recebido. Obrigado pelo apoio!"; loadApoio(); }
         }).catch(function(){});
       }, 15000);
     }catch(e){ $("qr").textContent = ""; $("pixStatus").textContent = "Não foi possível gerar o Pix agora. Tente de novo em instantes."; }
@@ -666,8 +686,31 @@ var PIX_CITY = "SUZANO";    // sua cidade (até 15 letras)
   });
   if (PIX_KEY.trim()) $("apoioCard").hidden = false;
   fetch("/api/config", { cache: "no-store" }).then(function(r){ return r.ok ? r.json() : null; }).then(function(c){
-    if (c && c.pix){ useGateway = true; $("apoioCard").hidden = false; }
+    if (c && c.pix){ useGateway = true; $("apoioCard").hidden = false; loadApoio(); setInterval(loadApoio, 8000); }
   }).catch(function(){});
+  var apoioSeen = null;
+  function loadApoio(){
+    fetch("/api/doacoes", { cache: "no-store" }).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+      if (!d || !d.apoiadores) return;
+      var ul = $("alist"), first = apoioSeen === null, seen = {};
+      ul.textContent = "";
+      if (!d.apoiadores.length){ var e = document.createElement("li"); e.className = "vazio"; e.textContent = "Ninguém apoiou ainda. O seu nome pode ser o primeiro."; ul.appendChild(e); }
+      d.apoiadores.forEach(function(a){
+        var key = a.nome + "|" + a.t; seen[key] = 1;
+        var li = document.createElement("li"); li.textContent = a.nome;
+        var sm = document.createElement("small"); sm.textContent = (sameDay(a.t, Date.now()) ? "" : dm(a.t) + " ") + hm(a.t); li.appendChild(sm);
+        if (!first && !apoioSeen[key]){
+          li.className = "novo";
+          $("toastDot").style.background = "#32BCAD";
+          $("toastText").textContent = a.nome + " apoiou o site agora";
+          $("toast").classList.add("show");
+          clearTimeout(toastTimer); toastTimer = setTimeout(function(){ $("toast").classList.remove("show"); }, 3200);
+        }
+        ul.appendChild(li);
+      });
+      apoioSeen = seen;
+    }).catch(function(){});
+  }
 
   render();
   setInterval(renderFeed, 30000);
