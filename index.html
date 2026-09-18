@@ -618,29 +618,56 @@ var PIX_CITY = "SUZANO";    // sua cidade (até 15 letras)
     var p = f("00","01") + f("26", f("00","br.gov.bcb.pix") + f("01", PIX_KEY.trim())) + f("52","0000") + f("53","986") + f("54", v.toFixed(2)) + f("58","BR") + f("59", clean(PIX_NAME, 25) || "APOIO") + f("60", clean(PIX_CITY, 15) || "BRASIL") + f("62", f("05","***")) + "6304";
     return p + crc16(p);
   }
-  var pixCode = "";
-  if (PIX_KEY.trim()){
-    $("apoioCard").hidden = false;
-    document.querySelectorAll(".val-btn").forEach(function(b){
-      b.addEventListener("click", function(){
-        document.querySelectorAll(".val-btn").forEach(function(x){ x.classList.toggle("on", x === b); });
-        var v = Number(b.getAttribute("data-v"));
-        pixCode = brcode(v);
-        $("qr").textContent = "";
-        if (window.QRCode) new QRCode($("qr"), { text: pixCode, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M });
-        else $("qr").textContent = "QR indisponível, use o código abaixo";
-        $("pixAmt").textContent = "R$ " + v.toFixed(2).replace(".", ",") + " via Pix";
-        $("pixStatus").textContent = "";
-        $("pixbox").classList.add("show");
-      });
-    });
-    $("pixCopy").addEventListener("click", function(){
-      if (!pixCode) return;
-      var done = function(){ $("pixStatus").textContent = "Código copiado. Cole em Pix Copia e Cola no app do banco."; };
-      if (navigator.clipboard) navigator.clipboard.writeText(pixCode).then(done, function(){ prompt("Copie o código:", pixCode); });
-      else prompt("Copie o código:", pixCode);
-    });
+  var pixCode = "", useGateway = false, pollTimer = null;
+  function stopPoll(){ if (pollTimer){ clearInterval(pollTimer); pollTimer = null; } }
+  function openBox(v){
+    $("qr").textContent = ""; $("pixStatus").textContent = ""; pixCode = "";
+    $("pixAmt").textContent = "R$ " + v.toFixed(2).replace(".", ",") + " via Pix";
+    $("pixbox").classList.add("show");
   }
+  function staticCharge(v){
+    openBox(v);
+    pixCode = brcode(v);
+    if (window.QRCode) new QRCode($("qr"), { text: pixCode, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M });
+    else $("qr").textContent = "QR indisponível, use o código abaixo";
+  }
+  async function gatewayCharge(v){
+    openBox(v); stopPoll();
+    $("qr").textContent = "Gerando Pix…";
+    try{
+      var r = await fetch("/api/pix", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: v }) });
+      var d = await r.json();
+      if (!r.ok || !d.copyPaste) throw new Error(d.error || "erro");
+      pixCode = d.copyPaste; $("qr").textContent = "";
+      if (d.qr){ var img = document.createElement("img"); img.src = d.qr; img.alt = "QR Code Pix"; img.width = 180; img.height = 180; $("qr").appendChild(img); }
+      else if (window.QRCode) new QRCode($("qr"), { text: pixCode, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M });
+      $("pixStatus").textContent = "Aguardando pagamento…";
+      var tries = 0;
+      pollTimer = setInterval(function(){
+        if (++tries > 40){ stopPoll(); $("pixStatus").textContent = ""; return; }
+        fetch("/api/pix/" + encodeURIComponent(d.id)).then(function(x){ return x.json(); }).then(function(s){
+          if (s && String(s.status).toUpperCase() === "PAID"){ stopPoll(); $("qr").textContent = ""; pixCode = ""; $("pixStatus").textContent = "Pagamento recebido. Obrigado pelo apoio!"; }
+        }).catch(function(){});
+      }, 15000);
+    }catch(e){ $("qr").textContent = ""; $("pixStatus").textContent = "Não foi possível gerar o Pix agora. Tente de novo em instantes."; }
+  }
+  document.querySelectorAll(".val-btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll(".val-btn").forEach(function(x){ x.classList.toggle("on", x === b); });
+      var v = Number(b.getAttribute("data-v"));
+      if (useGateway) gatewayCharge(v); else if (PIX_KEY.trim()) staticCharge(v);
+    });
+  });
+  $("pixCopy").addEventListener("click", function(){
+    if (!pixCode) return;
+    var done = function(){ $("pixStatus").textContent = "Código copiado. Cole em Pix Copia e Cola no app do banco."; };
+    if (navigator.clipboard) navigator.clipboard.writeText(pixCode).then(done, function(){ prompt("Copie o código:", pixCode); });
+    else prompt("Copie o código:", pixCode);
+  });
+  if (PIX_KEY.trim()) $("apoioCard").hidden = false;
+  fetch("/api/config", { cache: "no-store" }).then(function(r){ return r.ok ? r.json() : null; }).then(function(c){
+    if (c && c.pix){ useGateway = true; $("apoioCard").hidden = false; }
+  }).catch(function(){});
 
   render();
   setInterval(renderFeed, 30000);
