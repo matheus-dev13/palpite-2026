@@ -670,6 +670,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1
     Exportar JSON
   </button>
   <div class="ctx-sep"></div>
+  <button class="ctx-item" onclick="ctxAction('playwright')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    Gerar script Playwright
+  </button>
+  <button class="ctx-item" onclick="ctxAction('puppeteer')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    Gerar script Puppeteer
+  </button>
+  <div class="ctx-sep"></div>
   <button class="ctx-item danger" onclick="ctxAction('delete')">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
     Excluir
@@ -872,19 +881,11 @@ window.openProfile = function(id){
   p.last_opened = new Date().toISOString();
   p.updated_at = new Date().toISOString();
   save();
-  showToast('Perfil "'+p.name+'" aberto! Fingerprint aplicado.', 'success');
+  // Uma pagina web nao pode lancar um navegador desktop: entregamos o script
+  // de inicializacao pronto, com fingerprint, proxy, geo e cookies aplicados.
+  downloadText(buildPlaywrightScript(p), 'launch_' + p.name.replace(/\s+/g,'_') + '.js');
+  showToast('Script de inicializacao de "'+p.name+'" gerado. Rode com: node launch_...js', 'success');
   renderAll();
-  var configJson = JSON.stringify({
-    userAgent: p.user_agent || randomUA(),
-    viewport: { width: p.screen_w||1920, height: p.screen_h||1080 },
-    locale: p.language||'pt-BR',
-    timezoneId: p.timezone||'America/Sao_Paulo',
-    deviceScaleFactor: 1,
-    hasTouch: (p.platform==='Android'||p.platform==='iOS'),
-    colorScheme: 'light',
-    proxy: p.proxy_type && p.proxy_type !== 'none' ? { server: p.proxy_type+'://'+p.proxy_host+':'+p.proxy_port } : undefined
-  }, null, 2);
-  console.log('[MultiLogin] Profile config:', configJson);
   setTimeout(function(){ p.status = 'ready'; save(); renderAll(); }, 2000);
 };
 
@@ -1136,6 +1137,14 @@ window.ctxAction = function(action){
     downloadJSON([p], p.name.replace(/\s+/g,'_') + '.json');
     showToast('Perfil exportado!','success');
   }
+  else if (action === 'playwright'){
+    downloadText(buildPlaywrightScript(p), 'launch_' + p.name.replace(/\s+/g,'_') + '.js');
+    showToast('Script Playwright gerado!','success');
+  }
+  else if (action === 'puppeteer'){
+    downloadText(buildPuppeteerScript(p), 'launch_' + p.name.replace(/\s+/g,'_') + '.js');
+    showToast('Script Puppeteer gerado!','success');
+  }
   else if (action === 'delete'){
     if (!confirm('Excluir "'+p.name+'"?')) return;
     profiles = profiles.filter(function(x){ return x.id !== ctxProfileId; });
@@ -1234,12 +1243,125 @@ function statusLabel(s){ return {ready:'Pronto',running:'Ativo',error:'Erro',sus
 function esc(s){ var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 function downloadJSON(data, filename){
-  var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  downloadText(JSON.stringify(data, null, 2), filename, 'application/json');
+}
+function downloadText(text, filename, type){
+  var blob = new Blob([text], {type: type || 'text/plain'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+// Monta a configuracao de fingerprint a partir do perfil
+function fingerprintConfig(p){
+  var cfg = {
+    userAgent: p.user_agent || randomUA(),
+    viewport: { width: p.screen_w||1920, height: p.screen_h||1080 },
+    locale: p.language || 'pt-BR',
+    timezoneId: p.timezone || 'America/Sao_Paulo',
+    deviceScaleFactor: 1,
+    isMobile: (p.platform === 'Android' || p.platform === 'iOS'),
+    hasTouch: (p.platform === 'Android' || p.platform === 'iOS'),
+    hardwareConcurrency: p.hardware_concurrency || 8,
+    deviceMemory: p.device_memory || 8,
+    colorDepth: p.color_depth || 24,
+    doNotTrack: !!p.do_not_track,
+    webglVendor: p.webgl_vendor || '',
+    webglRenderer: p.webgl_renderer || '',
+    webrtc: p.webrtc || 'altered'
+  };
+  if (p.geolocation_mode === 'allow' && p.geo_lat != null && p.geo_lng != null){
+    cfg.geolocation = { latitude: p.geo_lat, longitude: p.geo_lng, accuracy: 100 };
+  }
+  if (p.proxy_type && p.proxy_type !== 'none' && p.proxy_host){
+    cfg.proxy = { server: p.proxy_type + '://' + p.proxy_host + ':' + (p.proxy_port||'') };
+    if (p.proxy_user) cfg.proxy.username = p.proxy_user;
+    if (p.proxy_pass) cfg.proxy.password = p.proxy_pass;
+  }
+  return cfg;
+}
+
+// Script de spoofing injetado antes de cada pagina (init script)
+function initScript(cfg){
+  return "(() => {\n" +
+    "  const defineNav = (k, v) => { try { Object.defineProperty(navigator, k, { get: () => v }); } catch (e) {} };\n" +
+    "  defineNav('hardwareConcurrency', " + (cfg.hardwareConcurrency) + ");\n" +
+    "  defineNav('deviceMemory', " + (cfg.deviceMemory) + ");\n" +
+    "  defineNav('language', " + JSON.stringify(cfg.locale) + ");\n" +
+    "  defineNav('languages', " + JSON.stringify([cfg.locale]) + ");\n" +
+    "  try { Object.defineProperty(screen, 'colorDepth', { get: () => " + cfg.colorDepth + " }); } catch (e) {}\n" +
+    (cfg.webglVendor || cfg.webglRenderer ?
+    "  const gp = WebGLRenderingContext.prototype.getParameter;\n" +
+    "  WebGLRenderingContext.prototype.getParameter = function (p) {\n" +
+    "    if (p === 37445) return " + JSON.stringify(cfg.webglVendor || 'Google Inc.') + ";\n" +
+    "    if (p === 37446) return " + JSON.stringify(cfg.webglRenderer || 'ANGLE') + ";\n" +
+    "    return gp.call(this, p);\n" +
+    "  };\n" : "") +
+    (cfg.webrtc === 'disabled' ?
+    "  try { Object.defineProperty(window, 'RTCPeerConnection', { get: () => undefined }); } catch (e) {}\n" : "") +
+    "})();";
+}
+
+function buildPlaywrightScript(p){
+  var cfg = fingerprintConfig(p);
+  var ctx = {
+    userAgent: cfg.userAgent,
+    viewport: cfg.viewport,
+    locale: cfg.locale,
+    timezoneId: cfg.timezoneId,
+    deviceScaleFactor: cfg.deviceScaleFactor,
+    isMobile: cfg.isMobile,
+    hasTouch: cfg.hasTouch,
+    colorScheme: 'light'
+  };
+  if (cfg.geolocation){ ctx.geolocation = cfg.geolocation; ctx.permissions = ['geolocation']; }
+  if (cfg.proxy) ctx.proxy = cfg.proxy;
+  var startUrl = p.start_url || 'https://abrahamjuliot.github.io/creepjs/';
+  return "// MultiLogin - perfil: " + p.name + "\n" +
+    "// Requisitos: npm i playwright  (e: npx playwright install chromium)\n" +
+    "// Execucao:   node " + ('launch_' + p.name.replace(/\s+/g,'_')) + ".js\n\n" +
+    "const { chromium } = require('playwright');\n\n" +
+    "const context_options = " + JSON.stringify(ctx, null, 2) + ";\n\n" +
+    "const cookies = " + JSON.stringify(p.cookies || [], null, 2) + ";\n\n" +
+    "(async () => {\n" +
+    "  const browser = await chromium.launch({ headless: false, args: ['--no-sandbox'] });\n" +
+    "  const context = await browser.newContext(context_options);\n" +
+    "  await context.addInitScript(() => {\n    " + initScript(cfg).replace(/\n/g, "\n    ") + "\n  });\n" +
+    "  if (cookies.length) { try { await context.addCookies(cookies); } catch (e) { console.warn('cookies:', e.message); } }\n" +
+    "  const page = await context.newPage();\n" +
+    "  await page.goto(" + JSON.stringify(startUrl) + ");\n" +
+    "  console.log('Perfil \"" + p.name.replace(/"/g,'') + "\" aberto. Feche a janela para encerrar.');\n" +
+    "})();\n";
+}
+
+function buildPuppeteerScript(p){
+  var cfg = fingerprintConfig(p);
+  var args = ['--no-sandbox', '--window-size=' + cfg.viewport.width + ',' + cfg.viewport.height, '--lang=' + cfg.locale];
+  if (cfg.proxy) args.push('--proxy-server=' + cfg.proxy.server);
+  var startUrl = p.start_url || 'https://abrahamjuliot.github.io/creepjs/';
+  return "// MultiLogin - perfil: " + p.name + "\n" +
+    "// Requisitos: npm i puppeteer\n" +
+    "// Execucao:   node " + ('launch_' + p.name.replace(/\s+/g,'_')) + ".js\n\n" +
+    "const puppeteer = require('puppeteer');\n\n" +
+    "const launchArgs = " + JSON.stringify(args, null, 2) + ";\n" +
+    "const cookies = " + JSON.stringify(p.cookies || [], null, 2) + ";\n\n" +
+    "(async () => {\n" +
+    "  const browser = await puppeteer.launch({ headless: false, args: launchArgs, defaultViewport: " + JSON.stringify(cfg.viewport) + " });\n" +
+    "  const page = await browser.newPage();\n" +
+    "  await page.setUserAgent(" + JSON.stringify(cfg.userAgent) + ");\n" +
+    (cfg.proxy && cfg.proxy.username ?
+    "  await page.authenticate({ username: " + JSON.stringify(cfg.proxy.username) + ", password: " + JSON.stringify(cfg.proxy.password||'') + " });\n" : "") +
+    (cfg.geolocation ?
+    "  const ctx = browser.defaultBrowserContext();\n" +
+    "  await ctx.overridePermissions(" + JSON.stringify(startUrl) + ", ['geolocation']);\n" +
+    "  await page.setGeolocation(" + JSON.stringify({ latitude: cfg.geolocation.latitude, longitude: cfg.geolocation.longitude }) + ");\n" : "") +
+    "  await page.evaluateOnNewDocument(() => {\n    " + initScript(cfg).replace(/\n/g, "\n    ") + "\n  });\n" +
+    "  if (cookies.length) { try { await page.setCookie(...cookies); } catch (e) { console.warn('cookies:', e.message); } }\n" +
+    "  await page.goto(" + JSON.stringify(startUrl) + ");\n" +
+    "  console.log('Perfil \"" + p.name.replace(/"/g,'') + "\" aberto. Feche a janela para encerrar.');\n" +
+    "})();\n";
 }
 
 function renderAll(){
