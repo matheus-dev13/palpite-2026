@@ -345,7 +345,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1
     </div>
     <div class="tabs">
       <button class="tab active" onclick="switchTab(this,'tab-basic')">Geral</button>
-      <button class="tab" onclick="switchTab(this,'tab-fingerprint')">Fingerprint</button>
+      <button class="tab" onclick="switchTab(this,'tab-fingerprint')">Navegador</button>
       <button class="tab" onclick="switchTab(this,'tab-proxy')">Proxy</button>
       <button class="tab" onclick="switchTab(this,'tab-advanced')">Avancado</button>
     </div>
@@ -445,102 +445,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1
           </div>
         </div>
         <div class="form-section">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Privacidade
-        </div>
-        <div class="form-grid">
-          <div class="form-row">
-            <label>Fuso horario</label>
-            <select id="pTZ">
-              <option value="America/Sao_Paulo">America/Sao_Paulo (BRT)</option>
-              <option value="America/New_York">America/New_York (EST)</option>
-              <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
-              <option value="America/Chicago">America/Chicago (CST)</option>
-              <option value="Europe/London">Europe/London (GMT)</option>
-              <option value="Europe/Berlin">Europe/Berlin (CET)</option>
-              <option value="Europe/Moscow">Europe/Moscow (MSK)</option>
-              <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
-              <option value="Asia/Shanghai">Asia/Shanghai (CST)</option>
-              <option value="Asia/Dubai">Asia/Dubai (GST)</option>
-              <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label>WebRTC</label>
-            <select id="pWebRTC">
-              <option value="altered">Alterar (recomendado)</option>
-              <option value="disabled">Desativar</option>
-              <option value="real">Real (nao recomendado)</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-section">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          Hardware
-        </div>
-        <div class="form-grid">
-          <div class="form-row">
-            <label>WebGL Vendor</label>
-            <select id="pGLVendor">
-              <option value="">Aleatorio</option>
-              <option value="Google Inc. (NVIDIA)">Google Inc. (NVIDIA)</option>
-              <option value="Google Inc. (AMD)">Google Inc. (AMD)</option>
-              <option value="Google Inc. (Intel)">Google Inc. (Intel)</option>
-              <option value="Apple">Apple</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label>WebGL Renderer</label>
-            <select id="pGLRenderer">
-              <option value="">Aleatorio</option>
-              <option value="ANGLE (NVIDIA GeForce RTX 3060)">NVIDIA RTX 3060</option>
-              <option value="ANGLE (NVIDIA GeForce RTX 3070)">NVIDIA RTX 3070</option>
-              <option value="ANGLE (NVIDIA GeForce RTX 4060)">NVIDIA RTX 4060</option>
-              <option value="ANGLE (NVIDIA GeForce GTX 1650)">NVIDIA GTX 1650</option>
-              <option value="ANGLE (AMD Radeon RX 6600)">AMD RX 6600</option>
-              <option value="ANGLE (AMD Radeon RX 580)">AMD RX 580</option>
-              <option value="ANGLE (Intel UHD Graphics 630)">Intel UHD 630</option>
-              <option value="ANGLE (Intel Iris Xe Graphics)">Intel Iris Xe</option>
-              <option value="Apple M1">Apple M1</option>
-              <option value="Apple M2">Apple M2</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label>CPU Cores</label>
-            <select id="pCores">
-              <option value="2">2 cores</option>
-              <option value="4">4 cores</option>
-              <option value="6">6 cores</option>
-              <option value="8" selected>8 cores</option>
-              <option value="12">12 cores</option>
-              <option value="16">16 cores</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label>Memoria do dispositivo</label>
-            <select id="pMemory">
-              <option value="2">2 GB</option>
-              <option value="4">4 GB</option>
-              <option value="8" selected>8 GB</option>
-              <option value="16">16 GB</option>
-              <option value="32">32 GB</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-grid">
-          <div class="form-row">
-            <label>Canvas Noise</label>
-            <input type="number" id="pCanvasNoise" min="0" max="100" step="1" value="0">
-            <div class="hint">0 = sem ruido, 1-100 = nivel de alteracao</div>
-          </div>
-          <div class="form-row">
-            <label>Audio Noise</label>
-            <input type="number" id="pAudioNoise" min="0" max="100" step="1" value="0">
-            <div class="hint">0 = sem ruido, 1-100 = nivel de alteracao</div>
-          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Regiao
         </div>
         <div class="form-row">
-          <label><input type="checkbox" id="pDNT"> Do Not Track</label>
+          <label>Fuso horario</label>
+          <select id="pTZ">
+            <option value="America/Sao_Paulo">America/Sao_Paulo (BRT)</option>
+            <option value="America/New_York">America/New_York (EST)</option>
+            <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
+            <option value="America/Chicago">America/Chicago (CST)</option>
+            <option value="Europe/London">Europe/London (GMT)</option>
+            <option value="Europe/Berlin">Europe/Berlin (CET)</option>
+            <option value="Europe/Moscow">Europe/Moscow (MSK)</option>
+            <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+            <option value="Asia/Shanghai">Asia/Shanghai (CST)</option>
+            <option value="Asia/Dubai">Asia/Dubai (GST)</option>
+            <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+          </select>
+          <div class="hint">Util quando o cliente esta em outro pais/fuso.</div>
         </div>
       </div>
       <!-- Proxy -->
@@ -882,9 +805,10 @@ window.openProfile = function(id){
   p.updated_at = new Date().toISOString();
   save();
   // Uma pagina web nao pode lancar um navegador desktop: entregamos o script
-  // de inicializacao pronto, com fingerprint, proxy, geo e cookies aplicados.
+  // de inicializacao pronto, que abre o perfil em sessao isolada (userDataDir
+  // proprio) com proxy e cookies aplicados.
   downloadText(buildPlaywrightScript(p), 'launch_' + p.name.replace(/\s+/g,'_') + '.js');
-  showToast('Script de inicializacao de "'+p.name+'" gerado. Rode com: node launch_...js', 'success');
+  showToast('Script de sessao isolada de "'+p.name+'" gerado. Rode com: node launch_...js', 'success');
   renderAll();
   setTimeout(function(){ p.status = 'ready'; save(); renderAll(); }, 2000);
 };
@@ -901,14 +825,6 @@ function resetForm(){
   $('pRes').value = '1920x1080';
   $('pColorDepth').value = '24';
   $('pTZ').value = 'America/Sao_Paulo';
-  $('pWebRTC').value = 'altered';
-  $('pGLVendor').value = '';
-  $('pGLRenderer').value = '';
-  $('pCores').value = '8';
-  $('pMemory').value = '8';
-  $('pCanvasNoise').value = '0';
-  $('pAudioNoise').value = '0';
-  $('pDNT').checked = false;
   $('pProxyType').value = 'none';
   $('pProxyHost').value = '';
   $('pProxyPort').value = '';
@@ -934,14 +850,6 @@ function fillForm(p){
   $('pRes').value = (p.screen_w||1920)+'x'+(p.screen_h||1080);
   $('pColorDepth').value = String(p.color_depth||24);
   $('pTZ').value = p.timezone || 'America/Sao_Paulo';
-  $('pWebRTC').value = p.webrtc || 'altered';
-  $('pGLVendor').value = p.webgl_vendor || '';
-  $('pGLRenderer').value = p.webgl_renderer || '';
-  $('pCores').value = String(p.hardware_concurrency||8);
-  $('pMemory').value = String(p.device_memory||8);
-  $('pCanvasNoise').value = String(p.canvas_noise||0);
-  $('pAudioNoise').value = String(p.audio_noise||0);
-  $('pDNT').checked = !!p.do_not_track;
   $('pProxyType').value = p.proxy_type || 'none';
   $('pProxyHost').value = p.proxy_host || '';
   $('pProxyPort').value = p.proxy_port || '';
@@ -983,14 +891,6 @@ window.saveProfile = function(){
     color_depth: parseInt($('pColorDepth').value)||24,
     timezone: $('pTZ').value,
     language: $('pLang').value,
-    webrtc: $('pWebRTC').value,
-    webgl_vendor: $('pGLVendor').value,
-    webgl_renderer: $('pGLRenderer').value,
-    hardware_concurrency: parseInt($('pCores').value)||8,
-    device_memory: parseInt($('pMemory').value)||8,
-    canvas_noise: parseFloat($('pCanvasNoise').value)||0,
-    audio_noise: parseFloat($('pAudioNoise').value)||0,
-    do_not_track: $('pDNT').checked,
     proxy_type: $('pProxyType').value,
     proxy_host: $('pProxyHost').value.trim(),
     proxy_port: parseInt($('pProxyPort').value)||null,
@@ -1095,12 +995,11 @@ window.bulkDuplicate = function(){
       copy.status = 'ready';
       copy.created_at = new Date().toISOString();
       copy.updated_at = new Date().toISOString();
-      copy.user_agent = randomUA();
       profiles.push(copy);
     }
   });
   selectedIds.clear(); save(); renderAll();
-  showToast('Perfis duplicados com novos fingerprints.','success');
+  showToast('Perfis duplicados (cada um com sessao isolada propria).','success');
 };
 
 // Context menu
@@ -1128,7 +1027,6 @@ window.ctxAction = function(action){
     copy.status = 'ready';
     copy.created_at = new Date().toISOString();
     copy.updated_at = new Date().toISOString();
-    copy.user_agent = randomUA();
     profiles.push(copy);
     save(); renderAll();
     showToast('Perfil duplicado!','success');
@@ -1254,23 +1152,16 @@ function downloadText(text, filename, type){
   URL.revokeObjectURL(a.href);
 }
 
-// Monta a configuracao de fingerprint a partir do perfil
-function fingerprintConfig(p){
+// Monta as opcoes de sessao isolada a partir do perfil.
+// Foco: manter cada cliente em uma sessao separada (cookies, logins e
+// armazenamento proprios), com proxy opcional. Sem spoofing de fingerprint.
+function sessionConfig(p){
   var cfg = {
+    userDataDir: './profiles/' + p.id,
     userAgent: p.user_agent || randomUA(),
     viewport: { width: p.screen_w||1920, height: p.screen_h||1080 },
     locale: p.language || 'pt-BR',
-    timezoneId: p.timezone || 'America/Sao_Paulo',
-    deviceScaleFactor: 1,
-    isMobile: (p.platform === 'Android' || p.platform === 'iOS'),
-    hasTouch: (p.platform === 'Android' || p.platform === 'iOS'),
-    hardwareConcurrency: p.hardware_concurrency || 8,
-    deviceMemory: p.device_memory || 8,
-    colorDepth: p.color_depth || 24,
-    doNotTrack: !!p.do_not_track,
-    webglVendor: p.webgl_vendor || '',
-    webglRenderer: p.webgl_renderer || '',
-    webrtc: p.webrtc || 'altered'
+    timezoneId: p.timezone || 'America/Sao_Paulo'
   };
   if (p.geolocation_mode === 'allow' && p.geo_lat != null && p.geo_lng != null){
     cfg.geolocation = { latitude: p.geo_lat, longitude: p.geo_lng, accuracy: 100 };
@@ -1283,73 +1174,53 @@ function fingerprintConfig(p){
   return cfg;
 }
 
-// Script de spoofing injetado antes de cada pagina (init script)
-function initScript(cfg){
-  return "(() => {\n" +
-    "  const defineNav = (k, v) => { try { Object.defineProperty(navigator, k, { get: () => v }); } catch (e) {} };\n" +
-    "  defineNav('hardwareConcurrency', " + (cfg.hardwareConcurrency) + ");\n" +
-    "  defineNav('deviceMemory', " + (cfg.deviceMemory) + ");\n" +
-    "  defineNav('language', " + JSON.stringify(cfg.locale) + ");\n" +
-    "  defineNav('languages', " + JSON.stringify([cfg.locale]) + ");\n" +
-    "  try { Object.defineProperty(screen, 'colorDepth', { get: () => " + cfg.colorDepth + " }); } catch (e) {}\n" +
-    (cfg.webglVendor || cfg.webglRenderer ?
-    "  const gp = WebGLRenderingContext.prototype.getParameter;\n" +
-    "  WebGLRenderingContext.prototype.getParameter = function (p) {\n" +
-    "    if (p === 37445) return " + JSON.stringify(cfg.webglVendor || 'Google Inc.') + ";\n" +
-    "    if (p === 37446) return " + JSON.stringify(cfg.webglRenderer || 'ANGLE') + ";\n" +
-    "    return gp.call(this, p);\n" +
-    "  };\n" : "") +
-    (cfg.webrtc === 'disabled' ?
-    "  try { Object.defineProperty(window, 'RTCPeerConnection', { get: () => undefined }); } catch (e) {}\n" : "") +
-    "})();";
-}
-
 function buildPlaywrightScript(p){
-  var cfg = fingerprintConfig(p);
+  var cfg = sessionConfig(p);
   var ctx = {
     userAgent: cfg.userAgent,
     viewport: cfg.viewport,
     locale: cfg.locale,
-    timezoneId: cfg.timezoneId,
-    deviceScaleFactor: cfg.deviceScaleFactor,
-    isMobile: cfg.isMobile,
-    hasTouch: cfg.hasTouch,
-    colorScheme: 'light'
+    timezoneId: cfg.timezoneId
   };
   if (cfg.geolocation){ ctx.geolocation = cfg.geolocation; ctx.permissions = ['geolocation']; }
   if (cfg.proxy) ctx.proxy = cfg.proxy;
-  var startUrl = p.start_url || 'https://abrahamjuliot.github.io/creepjs/';
+  var startUrl = p.start_url || 'https://www.google.com';
   return "// MultiLogin - perfil: " + p.name + "\n" +
+    "// Sessao isolada: cada perfil usa seu proprio userDataDir, entao cookies,\n" +
+    "// logins e armazenamento de um cliente NAO se misturam com os de outro.\n" +
     "// Requisitos: npm i playwright  (e: npx playwright install chromium)\n" +
     "// Execucao:   node " + ('launch_' + p.name.replace(/\s+/g,'_')) + ".js\n\n" +
     "const { chromium } = require('playwright');\n\n" +
+    "const userDataDir = " + JSON.stringify(cfg.userDataDir) + ";\n" +
     "const context_options = " + JSON.stringify(ctx, null, 2) + ";\n\n" +
     "const cookies = " + JSON.stringify(p.cookies || [], null, 2) + ";\n\n" +
     "(async () => {\n" +
-    "  const browser = await chromium.launch({ headless: false, args: ['--no-sandbox'] });\n" +
-    "  const context = await browser.newContext(context_options);\n" +
-    "  await context.addInitScript(() => {\n    " + initScript(cfg).replace(/\n/g, "\n    ") + "\n  });\n" +
+    "  // launchPersistentContext guarda a sessao no userDataDir do perfil\n" +
+    "  const context = await chromium.launchPersistentContext(userDataDir, Object.assign({ headless: false, args: ['--no-sandbox'] }, context_options));\n" +
     "  if (cookies.length) { try { await context.addCookies(cookies); } catch (e) { console.warn('cookies:', e.message); } }\n" +
-    "  const page = await context.newPage();\n" +
+    "  const page = context.pages()[0] || await context.newPage();\n" +
     "  await page.goto(" + JSON.stringify(startUrl) + ");\n" +
-    "  console.log('Perfil \"" + p.name.replace(/"/g,'') + "\" aberto. Feche a janela para encerrar.');\n" +
+    "  console.log('Perfil \"" + p.name.replace(/"/g,'') + "\" aberto em sessao isolada. Feche a janela para encerrar.');\n" +
     "})();\n";
 }
 
 function buildPuppeteerScript(p){
-  var cfg = fingerprintConfig(p);
+  var cfg = sessionConfig(p);
   var args = ['--no-sandbox', '--window-size=' + cfg.viewport.width + ',' + cfg.viewport.height, '--lang=' + cfg.locale];
   if (cfg.proxy) args.push('--proxy-server=' + cfg.proxy.server);
-  var startUrl = p.start_url || 'https://abrahamjuliot.github.io/creepjs/';
+  var startUrl = p.start_url || 'https://www.google.com';
   return "// MultiLogin - perfil: " + p.name + "\n" +
+    "// Sessao isolada: cada perfil usa seu proprio userDataDir, entao cookies,\n" +
+    "// logins e armazenamento de um cliente NAO se misturam com os de outro.\n" +
     "// Requisitos: npm i puppeteer\n" +
     "// Execucao:   node " + ('launch_' + p.name.replace(/\s+/g,'_')) + ".js\n\n" +
     "const puppeteer = require('puppeteer');\n\n" +
     "const launchArgs = " + JSON.stringify(args, null, 2) + ";\n" +
+    "const userDataDir = " + JSON.stringify(cfg.userDataDir) + ";\n" +
     "const cookies = " + JSON.stringify(p.cookies || [], null, 2) + ";\n\n" +
     "(async () => {\n" +
-    "  const browser = await puppeteer.launch({ headless: false, args: launchArgs, defaultViewport: " + JSON.stringify(cfg.viewport) + " });\n" +
-    "  const page = await browser.newPage();\n" +
+    "  const browser = await puppeteer.launch({ headless: false, userDataDir: userDataDir, args: launchArgs, defaultViewport: " + JSON.stringify(cfg.viewport) + " });\n" +
+    "  const page = (await browser.pages())[0] || await browser.newPage();\n" +
     "  await page.setUserAgent(" + JSON.stringify(cfg.userAgent) + ");\n" +
     (cfg.proxy && cfg.proxy.username ?
     "  await page.authenticate({ username: " + JSON.stringify(cfg.proxy.username) + ", password: " + JSON.stringify(cfg.proxy.password||'') + " });\n" : "") +
@@ -1357,10 +1228,9 @@ function buildPuppeteerScript(p){
     "  const ctx = browser.defaultBrowserContext();\n" +
     "  await ctx.overridePermissions(" + JSON.stringify(startUrl) + ", ['geolocation']);\n" +
     "  await page.setGeolocation(" + JSON.stringify({ latitude: cfg.geolocation.latitude, longitude: cfg.geolocation.longitude }) + ");\n" : "") +
-    "  await page.evaluateOnNewDocument(() => {\n    " + initScript(cfg).replace(/\n/g, "\n    ") + "\n  });\n" +
     "  if (cookies.length) { try { await page.setCookie(...cookies); } catch (e) { console.warn('cookies:', e.message); } }\n" +
     "  await page.goto(" + JSON.stringify(startUrl) + ");\n" +
-    "  console.log('Perfil \"" + p.name.replace(/"/g,'') + "\" aberto. Feche a janela para encerrar.');\n" +
+    "  console.log('Perfil \"" + p.name.replace(/"/g,'') + "\" aberto em sessao isolada. Feche a janela para encerrar.');\n" +
     "})();\n";
 }
 

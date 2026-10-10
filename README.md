@@ -8,17 +8,19 @@ Brincadeira sem valor de pesquisa eleitoral. Não divulgue os resultados publica
 - `supabase.sql`: cria a tabela de votos, as regras de segurança e o tempo real.
 - Votos no Supabase (um voto por aparelho, com login anônimo). Hospedagem na Cloudflare Pages.
 
-## MultiLogin (gerenciador de perfis de navegador)
-- `multilogin.html`: painel estilo AdsPower para gerenciar perfis de navegador isolados.
-  Cada perfil guarda um fingerprint (User Agent, resolução, fuso, idioma, WebGL, Canvas/Audio
-  noise, WebRTC, CPU/memória), proxy próprio (HTTP/HTTPS/SOCKS4/SOCKS5), geolocalização e cookies.
-  Tem grupos, tags, busca, operações em massa e importação/exportação em JSON.
+## MultiLogin (perfis de navegador com sessão isolada)
+- `multilogin.html`: painel para gerenciar perfis de navegador, cada um com **sessão isolada**.
+  Serve para manter cada cliente/conta separado: cookies, logins e armazenamento de um perfil
+  não se misturam com os de outro. Cada perfil guarda configurações padrão de navegador
+  (User Agent, resolução, fuso, idioma), proxy próprio (HTTP/HTTPS/SOCKS4/SOCKS5),
+  geolocalização e cookies. Tem grupos, tags, busca, operações em massa e import/export em JSON.
 - `multilogin.sql`: tabelas `browser_profiles` e `profile_groups` no Supabase (opcional; por
   padrão os dados ficam no `localStorage` do navegador).
 - Como uma página web não lança navegadores desktop, o painel **gera scripts prontos de
-  Playwright ou Puppeteer** por perfil (botão "Abrir" ou menu de contexto). Rode com
-  `node launch_<perfil>.js` para abrir um navegador real com o fingerprint, proxy e cookies
-  aplicados. Requer `npm i playwright` (ou `puppeteer`) no seu computador.
+  Playwright ou Puppeteer** por perfil (botão "Abrir" ou menu de contexto). O script usa um
+  `userDataDir` próprio por perfil (`launchPersistentContext` / `userDataDir`), então cada
+  sessão fica isolada em disco. Rode com `node launch_<perfil>.js` para abrir um navegador real
+  com a sessão, proxy e cookies daquele perfil. Requer `npm i playwright` (ou `puppeteer`).
 - Acesse em `/multilogin.html`.
 
 ## Pix (opcional)
